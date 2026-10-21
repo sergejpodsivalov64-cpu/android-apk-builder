@@ -53,15 +53,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
       c.restore();postInvalidateDelayed(32);
     }
     void animal(int i,float x,float y){
-      c.save();c.translate(x,y);float bounce=selected==i?(float)Math.sin(t*4)*10:0;c.translate(0,bounce);
+      c.save();c.translate(x,y);float bounce=selected==i?(float)Math.sin(t*4)*10:0;c.translate(0,bounce); float sway=(float)Math.sin(t*1.7+i)*0.035f; c.rotate(sway*20);
       oval(0x55446644,0,164,91,17);glow(-26,-48,110,0x44ffffff);
-      oval(body[i],0,92,76,89);
+      p.setShader(new RadialGradient(-32,43,170,new int[]{0xfffff5df,body[i],0xff79513c},new float[]{0f,.56f,1f},Shader.TileMode.CLAMP)); c.drawOval(-76,3,76,181,p);p.setShader(null);
       if(i==0){oval(0xffe9e9e9,-43,-89,22,87);oval(0xffe9e9e9,43,-89,22,87);oval(0xffffbdcc,-43,-89,11,67);oval(0xffffbdcc,43,-89,11,67);}
       else {circle(body[i],-65,-41,31);circle(body[i],65,-41,31);}
-      circle(body[i],0,-18,79);
+      p.setShader(new RadialGradient(-35,-63,145,new int[]{0xfffff6e4,body[i],0xff79513c},new float[]{0f,.54f,1f},Shader.TileMode.CLAMP));c.drawCircle(0,-18,79,p);p.setShader(null);
       oval(0xfffff2db,0,18,53,40);
-      circle(0xff302d38,-29,-28,9);circle(0xff302d38,29,-28,9);
-      circle(0xffffffff,-32,-32,3);circle(0xffffffff,26,-32,3);
+      float blink=Math.sin(t*1.6+i*2.7)>0.992?0.13f:1f;oval(0xff302d38,-29,-28,9,9*blink);oval(0xff302d38,29,-28,9,9*blink);
+      if(blink>0.5f){circle(0xffffffff,-32,-32,3);circle(0xffffffff,26,-32,3);}
       oval(0xfff68b9a,0,7,11,8);
       line(0xff77515a,0,15,-12,24,3);line(0xff77515a,0,15,12,24,3);
       circle(0xffffb0ae,-48,7,13);circle(0xffffb0ae,48,7,13);
