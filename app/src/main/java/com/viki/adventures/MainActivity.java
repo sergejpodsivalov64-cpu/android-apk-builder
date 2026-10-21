@@ -25,10 +25,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
   void speak(String s) { if(speech!=null) speech.speak(s,TextToSpeech.QUEUE_FLUSH,null,"viki"); }
   @Override protected void onDestroy() { if(speech!=null){speech.stop();speech.shutdown();} super.onDestroy(); }
   class Forest extends View {
-    Canvas c; Paint p=new Paint(3); float w,h,t=0; int selected=-1;
+    Canvas c; Paint p=new Paint(3); float w,h,t=0; int selected=-1; Bitmap sceneImage;
+    void loadScene(){try(java.io.InputStream stream=getAssets().open("forest_scene.webp")){sceneImage=BitmapFactory.decodeStream(stream);}catch(Exception ignored){sceneImage=null;}}
     String[] names={"Мишка","Коровка","Лисичка"};
     int[] body={0xffa36b43,0xfff5eee4,0xfff49b43};
-    Forest(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
+    Forest(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);loadScene();}
     void oval(int color,float x,float y,float rx,float ry) {p.setColor(color);p.setStyle(Paint.Style.FILL);c.drawOval(x-rx,y-ry,x+rx,y+ry,p);}
     void glow(float x,float y,float r,int color){p.setShader(new RadialGradient(x,y,r,new int[]{color,0x00ffffff},null,Shader.TileMode.CLAMP));c.drawCircle(x,y,r,p);p.setShader(null);}
     void cloud(float x,float y,float scale){c.save();c.translate(x,y);c.scale(scale,scale);oval(0x66ffffff,0,9,88,22);circle(0xfffdfaf1,-42,0,29);circle(0xffffffff,-5,-17,40);circle(0xffffffff,37,0,30);c.restore();}
@@ -39,6 +40,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     void text(String s,float x,float y,int size,int color){p.setColor(color);p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("sans-serif-rounded",Typeface.BOLD));p.setTextSize(size);c.drawText(s,x,y,p);}
     @Override protected void onDraw(Canvas canvas){
       c=canvas; w=getWidth();h=getHeight(); c.save(); c.scale(w/1000f,h/600f); t+=0.035f;
+      if(sceneImage!=null){p.setShader(null);p.setColor(Color.WHITE);c.drawBitmap(sceneImage,null,new RectF(0,0,1000,600),p);c.restore();postInvalidateDelayed(32);return;}
       p.setShader(new LinearGradient(0,0,0,600,0xff83d8f5,0xfff7f5bb,Shader.TileMode.CLAMP));c.drawRect(0,0,1000,600,p);p.setShader(null);
       glow(850,100,145,0x88fff5bb);circle(0xffffe6a0,850,100,58);cloud(180+(float)Math.sin(t*.13f)*24,105,1.2f);cloud(660-(float)Math.sin(t*.09f)*20,154,.75f);
       for(int i=0;i<8;i++){float x=i*150-45;oval(0xff79bc86,x,360,110,175);oval(0xff5d9d6c,x+28,310,75,125);}
@@ -76,7 +78,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     @Override public boolean onTouchEvent(android.view.MotionEvent e){
       if(e.getAction()==MotionEvent.ACTION_UP){
         float x=e.getX()*1000/getWidth(), y=e.getY()*600/getHeight();
-        for(int i=0;i<3;i++)if(Math.abs(x-(230+i*270))<115 && y>215 && y<565){
+        if(sceneImage!=null && x<105 && y<105){speak("Вика, кто говорит му-у? Найди коровку!");return true;}
+        for(int i=0;i<3;i++)if((sceneImage!=null ? Math.abs(x-(230+i*325))<135 && y>155 && y<515 : Math.abs(x-(230+i*270))<115 && y>215 && y<565)){
           selected=i;
           speak(i==1?"Правильно, Вика! Му-у! Это коровка!":i==0?"Это мишка! Он говорит р-р-р! Найди коровку.":"Это лисичка! Она говорит тяв-тяв! Найди коровку.");
           invalidate();break;
