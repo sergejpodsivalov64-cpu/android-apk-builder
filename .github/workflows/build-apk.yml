@@ -1,4 +1,5 @@
 name: Build Android APK
+# Automatically build on pushes to the Viki redesign branch.
 
 on:
   workflow_dispatch:
