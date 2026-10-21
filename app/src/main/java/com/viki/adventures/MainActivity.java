@@ -19,15 +19,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
   @Override public void onInit(int status) {
     if(status==TextToSpeech.SUCCESS) {
       speech.setLanguage(new Locale("ru","RU"));
-      speak("Добро пожаловать в волшебный лес! Нажми на зверюшку!");
+      speak("Привет, Вика! Кто говорит му-у? Покажи коровку!");
     }
   }
   void speak(String s) { if(speech!=null) speech.speak(s,TextToSpeech.QUEUE_FLUSH,null,"viki"); }
   @Override protected void onDestroy() { if(speech!=null){speech.stop();speech.shutdown();} super.onDestroy(); }
   class Forest extends View {
     Canvas c; Paint p=new Paint(3); float w,h,t=0; int selected=-1;
-    String[] names={"Зайчик","Лисичка","Мишка"};
-    int[] body={0xffeeeeee,0xfff49b43,0xffa36b43};
+    String[] names={"Мишка","Коровка","Лисичка"};
+    int[] body={0xffa36b43,0xfff5eee4,0xfff49b43};
     Forest(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
     void oval(int color,float x,float y,float rx,float ry) {p.setColor(color);p.setStyle(Paint.Style.FILL);c.drawOval(x-rx,y-ry,x+rx,y+ry,p);}
     void glow(float x,float y,float r,int color){p.setShader(new RadialGradient(x,y,r,new int[]{color,0x00ffffff},null,Shader.TileMode.CLAMP));c.drawCircle(x,y,r,p);p.setShader(null);}
@@ -48,7 +48,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
       for(int i=0;i<22;i++){float x=(i*79)%1000,y=460+(i*43)%125;flower(x,y,i%2==0?0xffffb6d4:0xfffff1a1);}
       for(int i=0;i<5;i++){float bx=110+i*185+(float)Math.sin(t*.7f+i)*24,by=215+(i%2)*90+(float)Math.cos(t+i)*17;oval(0x99ffb9de,bx-7,by-3,9,13);oval(0x99b9d9ff,bx+7,by-3,9,13);line(0xff795b72,bx,by-8,bx,by+10,3);}
       text("ВОЛШЕБНЫЙ ЛЕС",500,76,46,0xff356c58);
-      text("Нажми на зверюшку!",500,117,26,0xff356c58);
+      text("Кто говорит му-у?",500,117,32,0xff356c58);
       for(int i=0;i<3;i++)animal(i,230+i*270,390+(float)Math.sin(t+i)*5);
       c.restore();postInvalidateDelayed(32);
     }
@@ -56,10 +56,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
       c.save();c.translate(x,y);float bounce=selected==i?(float)Math.sin(t*4)*10:0;c.translate(0,bounce); float sway=(float)Math.sin(t*1.7+i)*0.035f; c.rotate(sway*20);
       oval(0x55446644,0,164,91,17);glow(-26,-48,110,0x44ffffff);
       p.setShader(new RadialGradient(-32,43,170,new int[]{0xfffff5df,body[i],0xff79513c},new float[]{0f,.56f,1f},Shader.TileMode.CLAMP)); c.drawOval(-76,3,76,181,p);p.setShader(null);
-      if(i==0){oval(0xffe9e9e9,-43,-89,22,87);oval(0xffe9e9e9,43,-89,22,87);oval(0xffffbdcc,-43,-89,11,67);oval(0xffffbdcc,43,-89,11,67);}
+      if(i==1){circle(0xff53453d,-64,-45,28);circle(0xff53453d,64,-45,28);
+        oval(0xffedb5a2,-65,-45,16,18);oval(0xffedb5a2,65,-45,16,18);
+        oval(0xffddd1bd,-42,-98,12,29);oval(0xffddd1bd,42,-98,12,29);
+        oval(0xff53453d,-33,77,23,32);oval(0xff53453d,35,105,17,23);
+      }else if(i==2){circle(body[i],-65,-41,31);circle(body[i],65,-41,31);}
       else {circle(body[i],-65,-41,31);circle(body[i],65,-41,31);}
       p.setShader(new RadialGradient(-35,-63,145,new int[]{0xfffff6e4,body[i],0xff79513c},new float[]{0f,.54f,1f},Shader.TileMode.CLAMP));c.drawCircle(0,-18,79,p);p.setShader(null);
-      oval(0xfffff2db,0,18,53,40);
+      oval(i==1?0xffffb9c8:0xfffff2db,0,18,53,40);
       float blink=Math.sin(t*1.6+i*2.7)>0.992?0.13f:1f;oval(0xff302d38,-29,-28,9,9*blink);oval(0xff302d38,29,-28,9,9*blink);
       if(blink>0.5f){circle(0xffffffff,-32,-32,3);circle(0xffffffff,26,-32,3);}
       oval(0xfff68b9a,0,7,11,8);
@@ -74,7 +78,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         float x=e.getX()*1000/getWidth(), y=e.getY()*600/getHeight();
         for(int i=0;i<3;i++)if(Math.abs(x-(230+i*270))<115 && y>215 && y<565){
           selected=i;
-          speak(new String[]{"Привет! Я зайчик! Прыг-прыг!","Привет! Я лисичка!","Привет! Я мишка! Р-р-р!"}[i]);
+          speak(i==1?"Правильно, Вика! Му-у! Это коровка!":i==0?"Это мишка! Он говорит р-р-р! Найди коровку.":"Это лисичка! Она говорит тяв-тяв! Найди коровку.");
           invalidate();break;
         }
         return true;
