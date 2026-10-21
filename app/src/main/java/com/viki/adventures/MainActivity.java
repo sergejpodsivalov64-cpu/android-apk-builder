@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.graphics.*;
 import android.view.*;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.JavascriptInterface;
 import java.util.*;
 
 public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
@@ -13,7 +16,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
   @Override public void onCreate(Bundle state) {
     super.onCreate(state);
     getWindow().getDecorView().setSystemUiVisibility(5894 | 1024 | 512);
-    forest = new Forest(); setContentView(forest);
+    WebView web = new WebView(this);
+    web.getSettings().setJavaScriptEnabled(true);
+    web.getSettings().setAllowFileAccess(true);
+    web.addJavascriptInterface(new Object(){@JavascriptInterface public void speak(String words){runOnUiThread(()->MainActivity.this.speak(words));}},"Android");
+    web.setWebViewClient(new WebViewClient());
+    web.loadUrl("file:///android_asset/forest.html");
+    setContentView(web);
     speech = new TextToSpeech(this,this);
   }
   @Override public void onInit(int status) {
