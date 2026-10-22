@@ -1,79 +1,21 @@
 package com.viki.adventures;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.graphics.*;
-import android.view.*;
-import java.util.*;
-
-public class MainActivity extends Activity implements TextToSpeech.OnInitListener {
-  TextToSpeech speech;
-  Forest forest;
-  @Override public void onCreate(Bundle state) {
-    super.onCreate(state);
-    getWindow().getDecorView().setSystemUiVisibility(5894 | 1024 | 512);
-    forest = new Forest(); setContentView(forest);
-    speech = new TextToSpeech(this,this);
-  }
-  @Override public void onInit(int status) {
-    if(status==TextToSpeech.SUCCESS) {
-      speech.setLanguage(new Locale("ru","RU"));
-      speak("Добро пожаловать в волшебный лес! Нажми на зверюшку!");
-    }
-  }
-  void speak(String s) { if(speech!=null) speech.speak(s,TextToSpeech.QUEUE_FLUSH,null,"viki"); }
-  @Override protected void onDestroy() { if(speech!=null){speech.stop();speech.shutdown();} super.onDestroy(); }
-  class Forest extends View {
-    Canvas c; Paint p=new Paint(3); float w,h,t=0; int selected=-1;
-    String[] names={"Зайчик","Лисичка","Мишка"};
-    int[] body={0xffeeeeee,0xfff49b43,0xffa36b43};
-    Forest(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
-    void oval(int color,float x,float y,float rx,float ry) {p.setColor(color);p.setStyle(Paint.Style.FILL);c.drawOval(x-rx,y-ry,x+rx,y+ry,p);}
-    void circle(int color,float x,float y,float r){p.setColor(color);p.setStyle(Paint.Style.FILL);c.drawCircle(x,y,r,p);}
-    void line(int color,float x,float y,float xx,float yy,float stroke){p.setColor(color);p.setStrokeWidth(stroke);p.setStrokeCap(Paint.Cap.ROUND);c.drawLine(x,y,xx,yy,p);}
-    void text(String s,float x,float y,int size,int color){p.setColor(color);p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("sans-serif-rounded",Typeface.BOLD));p.setTextSize(size);c.drawText(s,x,y,p);}
-    @Override protected void onDraw(Canvas canvas){
-      c=canvas; w=getWidth();h=getHeight(); c.save(); c.scale(w/1000f,h/600f); t+=0.035f;
-      p.setShader(new LinearGradient(0,0,0,600,0xff83d8f5,0xfff7f5bb,Shader.TileMode.CLAMP));c.drawRect(0,0,1000,600,p);p.setShader(null);
-      circle(0xffffe6a0,850,100,58);
-      for(int i=0;i<8;i++){float x=i*150-45;oval(0xff79bc86,x,360,110,175);oval(0xff5d9d6c,x+28,310,75,125);}
-      p.setColor(0xff79c879);c.drawRect(0,390,1000,600,p);
-      oval(0xffb3db7a,500,570,610,135);
-      for(int i=0;i<22;i++){float x=(i*79)%1000,y=460+(i*43)%125;circle(i%2==0?0xffffe6f2:0xffffffaa,x,y,4);}
-      text("ВОЛШЕБНЫЙ ЛЕС",500,76,46,0xff356c58);
-      text("Нажми на зверюшку!",500,117,26,0xff356c58);
-      for(int i=0;i<3;i++)animal(i,230+i*270,390+(float)Math.sin(t+i)*5);
-      c.restore();postInvalidateDelayed(32);
-    }
-    void animal(int i,float x,float y){
-      c.save();c.translate(x,y);float bounce=selected==i?(float)Math.sin(t*4)*10:0;c.translate(0,bounce);
-      oval(0x55446644,0,164,91,17);
-      oval(body[i],0,92,76,89);
-      if(i==0){oval(0xffe9e9e9,-43,-89,22,87);oval(0xffe9e9e9,43,-89,22,87);oval(0xffffbdcc,-43,-89,11,67);oval(0xffffbdcc,43,-89,11,67);}
-      else {circle(body[i],-65,-41,31);circle(body[i],65,-41,31);}
-      circle(body[i],0,-18,79);
-      oval(0xfffff2db,0,18,53,40);
-      circle(0xff302d38,-29,-28,9);circle(0xff302d38,29,-28,9);
-      circle(0xffffffff,-32,-32,3);circle(0xffffffff,26,-32,3);
-      oval(0xfff68b9a,0,7,11,8);
-      line(0xff77515a,0,15,-12,24,3);line(0xff77515a,0,15,12,24,3);
-      circle(0xffffb0ae,-48,7,13);circle(0xffffb0ae,48,7,13);
-      oval(body[i],-48,152,29,19);oval(body[i],48,152,29,19);
-      text(names[i],0,208,25,0xff335b48);
-      c.restore();
-    }
-    @Override public boolean onTouchEvent(android.view.MotionEvent e){
-      if(e.getAction()==MotionEvent.ACTION_UP){
-        float x=e.getX()*1000/getWidth(), y=e.getY()*600/getHeight();
-        for(int i=0;i<3;i++)if(Math.abs(x-(230+i*270))<115 && y>215 && y<565){
-          selected=i;
-          speak(new String[]{"Привет! Я зайчик! Прыг-прыг!","Привет! Я лисичка!","Привет! Я мишка! Р-р-р!"}[i]);
-          invalidate();break;
-        }
-        return true;
-      }
-      return true;
-    }
-  }
+import android.Manifest;import android.app.*;import android.os.*;import android.content.*;import android.content.pm.PackageManager;import android.media.*;import android.view.*;import android.widget.*;import java.io.*;import java.util.*;import java.util.zip.*;
+public class MainActivity extends Activity{
+int scene=1,line=1;int[] counts={6,5,5,6,5,6,5,6,5,6,5,6,5,6,5,6};MediaRecorder rec;MediaPlayer player;EditText text;TextView label;File dir;boolean recording=false;
+String id(){return String.format(Locale.US,"scene_%02d_line_%02d",scene,line);}File audio(){return new File(dir,id()+".m4a");}
+public void onCreate(Bundle b){super.onCreate(b);dir=new File(getFilesDir(),"recordings");dir.mkdirs();draw();}
+void btn(LinearLayout root,String caption,Runnable action){Button b=new Button(this);b.setText(caption);root.addView(b);b.setOnClickListener(v->action.run());}
+void draw(){ScrollView sc=new ScrollView(this);LinearLayout root=new LinearLayout(this);root.setPadding(24,24,24,24);root.setOrientation(1);sc.addView(root);setContentView(sc);label=new TextView(this);label.setTextSize(22);root.addView(label);TextView note=new TextView(this);note.setText("87 мест для записи. Исходный текст сценария пока недоступен — реплики можно вводить самостоятельно.");root.addView(note);text=new EditText(this);text.setMinLines(3);text.setHint("Текст реплики");root.addView(text);
+btn(root,"Сохранить текст",()->{save();Toast.makeText(this,"Сохранено",0).show();});
+btn(root,"Записать / Остановить",()->{if(recording){stop();refresh();}else{if(Build.VERSION.SDK_INT>=23&&checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},1);return;}record();}});
+btn(root,"Прослушать",()->{try{if(player!=null)player.release();player=new MediaPlayer();player.setDataSource(audio().getAbsolutePath());player.prepare();player.start();}catch(Exception e){Toast.makeText(this,"Записи пока нет",0).show();}});
+btn(root,"Предыдущая",()->{save();if(line>1)line--;else if(scene>1){scene--;line=counts[scene-1];}refresh();});
+btn(root,"Следующая",()->{save();if(line<counts[scene-1])line++;else if(scene<16){scene++;line=1;}refresh();});
+btn(root,"Экспорт ZIP",()->{save();Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("application/zip");i.putExtra(Intent.EXTRA_TITLE,"VoiceWiki.zip");startActivityForResult(i,10);});refresh();}
+void save(){getPreferences(0).edit().putString(id(),text.getText().toString()).apply();}
+void refresh(){label.setText("Voice Wiki: Три поросёнка\nСцена "+scene+"/16, реплика "+line+"/"+counts[scene-1]+(audio().exists()?" ✓":""));text.setText(getPreferences(0).getString(id(),""));}
+void record(){try{rec=new MediaRecorder();rec.setAudioSource(MediaRecorder.AudioSource.MIC);rec.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);rec.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);rec.setOutputFile(audio().getAbsolutePath());rec.prepare();rec.start();recording=true;Toast.makeText(this,"Запись идёт",0).show();}catch(Exception e){if(rec!=null){rec.release();rec=null;}Toast.makeText(this,"Ошибка записи",0).show();}}
+void stop(){if(rec!=null){try{rec.stop();}catch(Exception e){}rec.release();rec=null;}recording=false;}
+protected void onActivityResult(int r,int code,Intent data){super.onActivityResult(r,code,data);if(r==10&&code==RESULT_OK&&data!=null){try(ZipOutputStream z=new ZipOutputStream(getContentResolver().openOutputStream(data.getData()))){byte[] b=new byte[8192];for(File f:dir.listFiles()){z.putNextEntry(new ZipEntry(f.getName()));try(FileInputStream in=new FileInputStream(f)){int n;while((n=in.read(b))>0)z.write(b,0,n);}z.closeEntry();}StringBuilder t=new StringBuilder();for(int s=1;s<=16;s++)for(int l=1;l<=counts[s-1];l++)t.append(String.format(Locale.US,"scene_%02d_line_%02d",s,l)).append(": ").append(getPreferences(0).getString(String.format(Locale.US,"scene_%02d_line_%02d",s,l),"")).append("\n");z.putNextEntry(new ZipEntry("texts.txt"));z.write(t.toString().getBytes("UTF-8"));z.closeEntry();Toast.makeText(this,"ZIP сохранён",0).show();}catch(Exception e){Toast.makeText(this,"Ошибка экспорта",0).show();}}}
+protected void onPause(){if(recording)stop();super.onPause();}protected void onDestroy(){if(player!=null)player.release();super.onDestroy();}
 }
