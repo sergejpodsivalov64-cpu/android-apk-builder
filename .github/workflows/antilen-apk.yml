@@ -1,0 +1,24 @@
+name: Antilen APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [antilen-app]
+    paths: ['antilen/**', '.github/workflows/antilen-apk.yml']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - run: gradle -p antilen assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Antilen-debug-APK
+          path: antilen/app/build/outputs/apk/debug/app-debug.apk
